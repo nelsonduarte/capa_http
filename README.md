@@ -38,19 +38,24 @@ fun main(stdio: Stdio, u: Unsafe)
 ```
 
 Consumed via Capa's package manager. Declare the dependency in
-your project's `capa.toml`:
+your project's `capa.toml` (audit-grade form with the publisher's
+GPG fingerprint):
 
 ```toml
 [package]
 name = "my-project"
 version = "0.1.0"
 
-[dependencies]
-capa_http = { git = "https://github.com/nelsonduarte/capa_http", tag = "v0.1" }
+[dependencies.capa_http]
+git = "https://github.com/nelsonduarte/capa_http"
+tag = "v0.1.1"
+verify_key = "6C1D222D491FB88031E041A536CFB426101AA24B"
 ```
 
-Then `capa install` fetches the library into `./vendor/` and the
-loader picks it up automatically. The `urllib_helper.py` Python
+Then `capa install` fetches the library into `./vendor/`, runs
+`git verify-tag` against your GPG keyring (import the publisher's
+key first; see [`SECURITY.md`](SECURITY.md)), and the loader
+picks it up automatically. The `urllib_helper.py` Python
 side-module is materialised next to `urllib_client.capa` so the
 factory's `py_import` path resolves without `sys.path` games.
 
