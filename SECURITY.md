@@ -52,7 +52,7 @@ Declare the fingerprint in your project's `capa.toml`:
 ```toml
 [dependencies.capa_http]
 git = "https://github.com/nelsonduarte/capa_http"
-tag = "v0.1.1"
+tag = "v0.1.3"
 verify_key = "6C1D222D491FB88031E041A536CFB426101AA24B"
 ```
 
@@ -83,12 +83,12 @@ would be visible in the transparency log.
 
 ```bash
 # Download the signed tarball from the release page.
-gh release download v0.1.2 \
+gh release download v0.1.3 \
     --repo nelsonduarte/capa_http \
     --pattern '*.tar.gz'
 
 # Verify the attestation against the public Sigstore log.
-gh attestation verify capa_http-v0.1.2.tar.gz \
+gh attestation verify capa_http-v0.1.3.tar.gz \
     --owner nelsonduarte
 ```
 

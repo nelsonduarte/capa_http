@@ -1,4 +1,4 @@
-// libraries/capa_http/urllib_client.capa
+// urllib_client.capa
 //
 // Concrete implementor of the `Http` capability, backed by
 // Python's `urllib.request` via the Unsafe boundary. The
@@ -7,10 +7,12 @@
 // authority, which is the point.
 //
 // Factory: `make_urllib_client(unsafe)` bootstraps sys.path so
-// `urllib_helper.py` is importable (assumes the program runs
-// from the project root, with `libraries/capa_http/` reachable
-// on disk). Returns the client ready to be passed into
-// `Http`-typed parameters.
+// `urllib_helper.py` is importable. Two locations are probed:
+// `./vendor/capa_http/` (where Capa's package manager
+// materialises the dep on `capa install`) and the legacy
+// `./libraries/capa_http/` (the older hand-vendoring path).
+// vendor wins when both exist. Returns the client ready to be
+// passed into `Http`-typed parameters.
 
 import capa_http.http
 
@@ -22,15 +24,22 @@ pub type UrllibHttpClient {
     u: Unsafe
 }
 
-// Factory. Adds `libraries/capa_http/` to `sys.path` so the
-// `urllib_helper` module resolves; returns a client whose
-// `Unsafe` is the one the caller passed in.
+// Factory. Adds the two candidate locations of
+// `urllib_helper.py` to `sys.path` so `py_import("urllib_helper")`
+// resolves regardless of how the dep was placed on disk
+// (package manager vs. hand-vendoring). Both inserts are at
+// index 0; the LAST insert ends up at the front of sys.path,
+// so vendor takes priority. Python silently ignores a sys.path
+// entry that does not exist, so a project that uses only one
+// of the two conventions pays nothing for the other.
 pub fun make_urllib_client(u: Unsafe) -> UrllibHttpClient
     let sys_mod = py_import(u, "sys")
     let os_mod  = py_import(u, "os")
     let cwd     = py_invoke(u, os_mod.getcwd, [])
-    let lib_dir = py_invoke(u, os_mod.path.join, [cwd, "libraries", "capa_http"])
+    let lib_dir    = py_invoke(u, os_mod.path.join, [cwd, "libraries", "capa_http"])
+    let vendor_dir = py_invoke(u, os_mod.path.join, [cwd, "vendor", "capa_http"])
     py_invoke(u, sys_mod.path.insert, [0, lib_dir])
+    py_invoke(u, sys_mod.path.insert, [0, vendor_dir])
     return UrllibHttpClient { u: u }
 
 // =========================================================
